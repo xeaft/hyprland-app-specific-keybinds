@@ -2,6 +2,8 @@ import os
 import sys
 import socket
 
+EVENT_WINDOW_FOCUSED = "activewindow"
+
 hypr_inst_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", None)
 
 if (hypr_inst_signature is None):
@@ -19,7 +21,11 @@ if not os.path.exists(socket_path):
     print("Socket doesnt exist (what?)")
     sys.exit(3)
 
-def create_socket(): 
+app_keybinds = []
+def create_socket(keybinds):
+    global app_keybinds
+    app_keybinds = keybinds
+
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
     try:
@@ -32,22 +38,38 @@ def create_socket():
                 print("sock closed")
                 break
 
-            print(f"data: {data}");
-    except:
-        pass
+            on_event(data)
+    except Exception as e:
+        print("error. sad: ", e)
     finally:
         sock.close()
 
 def add_keybind(keybind_event) -> None:
-    pass
+    cmd = keybind_event.to_command()
+    print(cmd)
+    os.system(cmd)
+    keybind_event.active = True
 
 def remove_keybind(keybind_event):
-    pass
+    os.system(keybind_event.to_command(True))
+    keybind_event.active = False
 
 def on_event(event_text : bytes):
     event : str = event_text.decode().strip()
+    events = event.split("\n")
 
-    event_type, event_data = event.split(">>")
-    
-    if (event_type == None):
-        pass
+    for ev in events:
+        event_type, event_data = ev.split(">>")
+
+        if (event_type != EVENT_WINDOW_FOCUSED):
+            continue
+
+        window_class = event_data.split(",")[0]
+        print(f"Window focused: {window_class}")
+        for keyb in app_keybinds:
+            if keyb.winclass == window_class:
+                add_keybind(keyb)
+                continue
+            if keyb.active:
+                remove_keybind(keyb)
+

@@ -1,0 +1,1 @@
+# hyprland-app-specific-keybinds

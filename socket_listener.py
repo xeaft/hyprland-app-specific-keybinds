@@ -19,21 +19,35 @@ if not os.path.exists(socket_path):
     print("Socket doesnt exist (what?)")
     sys.exit(3)
 
-sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+def create_socket(): 
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-try:
-    sock.connect(socket_path)
-    print("connected to hyprland socket2")
+    try:
+        sock.connect(socket_path)
+        print("connected to hyprland socket2")
 
-    while True:
-        data = sock.recv(4096)
-        if not data:
-            print("sock closed")
-            break
+        while True:
+            data = sock.recv(4096)
+            if not data:
+                print("sock closed")
+                break
 
-        print(f"data: {data}");
+            print(f"data: {data}");
+    except:
+        pass
+    finally:
+        sock.close()
 
-except:
+def add_keybind(keybind_event) -> None:
     pass
-finally:
-    sock.close()
+
+def remove_keybind(keybind_event):
+    pass
+
+def on_event(event_text : bytes):
+    event : str = event_text.decode().strip()
+
+    event_type, event_data = event.split(">>")
+    
+    if (event_type == None):
+        pass

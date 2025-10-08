@@ -14,13 +14,11 @@ current_window_class = ""
 running = True
 
 def handle_keybind_activation() -> None:
+    remove_keybinds()
     for keyb in app_keybinds:
         if keyb.winclass == current_window_class:
             if not keyb.active:
                 add_keybind(keyb)
-            continue
-        if keyb.active:
-            remove_keybind(keyb)
 
 def reload_keybinds() -> None:
     global app_keybinds

@@ -11,10 +11,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    if args.reload or args.stop:
-        print("use the wrapper script for reload/stop")
-        sys.exit()
-
     config = conf_parser.read_keybinds_file()
     keys = conf_parser.parse_key_lines(config)
     socket = socket_listener.create_socket(keys, args.show_logs)

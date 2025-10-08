@@ -1,5 +1,5 @@
 # hyprland-app-specific-keybinds
-script that allows you to have keybinds for specific windows on hyprland
+script that allows you to have window-specific keybinds for on hyprland
 <details>
   <summary>installation</summary>
   
@@ -9,21 +9,31 @@ script that allows you to have keybinds for specific windows on hyprland
   chmod +x install.sh
   ./install.sh
   ```
+\
+prequisites:
+- a python interpreter in PATH (either `python` or `python3`)
+- `XDG_CONFIG_DIRS` and `XDG_RUNTIME_DIR` are set
+- hyprland.. of course
+
+for custom hyprland instances/dots:
+- export HYPRCONF to the config folder.
+  - e.g. if your config path is `~/.config/myHyprland` instead of `~/.config/hypr`, export HYPRCONF to `myHyprland` (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
 </details>
 <details>
 <summary>usage</summary>
   
-`exec-once = hyprwinbinds` or the path to it, if its not in PATH
+add `exec-once = hyprwinbinds` to your hyprland config
   
 configuration:
 ```bind = [class], [modifiers], [key], [dispatcher], [params]```
 
-save that into `windowkeys.conf` in your `hypr` directory
+save that into `windowkeys.conf` in your `hypr` directory\
+if you want to use a different file, export `KEYCONF` to the file name (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
 
 For example:
 ```hyprlang
 bind = kitty, meta, h, exec, kitty                        # opens another kitty instance on Meta + H if kitty is focused (why would you want this)
-bind = , control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window without a class is focused (e.g. no window whatsoever or things like some file pickers)
+bind = , control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window without a class is focused (e.g. no focused window or things like some file pickers)
 
 # whitespace doesnt matter, examples below are valid:
 bind=,control,space,exec,rofi -show drun
@@ -35,3 +45,11 @@ to stop hyprwinbinds: \
 to reload the config (it doesnt reload automatically like hyprland (soon))\
 `hyprwinbinds reload`
 </details>
+<details>
+  <summary>not (yet) supported things</summary>
+
+  - live reloading
+  - [bind flags](https://wiki.hypr.land/Configuring/Binds/#bind-flags)
+  - other ways of specifying a window (aside from its class)
+</details>
+

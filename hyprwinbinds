@@ -9,4 +9,5 @@ else
     exit 1
 fi
 
-"$interp" pysrc/main.py "$@"
+scr_dir="$(cd "$(dirname "$0")" && pwd)"
+"$interp" "$scr_dir/pysrc/main.py" "$@"

@@ -1,5 +1,5 @@
 # hyprland-app-specific-keybinds
-script that allows you to have window-specific keybinds for on hyprland
+a script that allows you to have window-specific keybinds on hyprland
 <details>
   <summary>installation</summary>
   
@@ -30,7 +30,7 @@ configuration:
 save that into `windowkeys.conf` in your `hypr` directory\
 if you want to use a different file, export `KEYCONF` to the file name (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
 
-For example:
+for example:
 ```hyprlang
 bind = kitty, meta, h, exec, kitty                        # opens another kitty instance on Meta + H if kitty is focused (why would you want this)
 bind = , control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window without a class is focused (e.g. no focused window or things like some file pickers)

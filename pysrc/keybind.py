@@ -5,10 +5,10 @@ class Keybind:
         self.key = key
         self.dispatcher = dispatcher
         self.params = params
-        self.flags = bind_flags
+        self.flags = bind_flags if bind_flags is not None else ""
         self.active = False
 
     def to_command(self, unbind : bool = False) -> str:
         if not unbind:
-           return f"hyprctl keyword -- bind {self.mod},{self.key},{self.dispatcher},{self.params}"
+           return f"hyprctl keyword -- bind{self.flags} {self.mod},{self.key},{self.dispatcher},{self.params}"
         return f"hyprctl keyword unbind {self.mod},{self.key}"

@@ -38,20 +38,20 @@ def read_keybinds_file() -> List[str]:
 
 def parse_key_lines(lines : List[str]) -> List[Keybind]:
     keybinds : List[Keybind] = []
-
+    
     for line in lines:
         comment_index = line.find("#")
         if comment_index != -1:
             line = line[:comment_index]
         
-        reg = re.compile(r'^\s*bind\s*=\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
+        reg = re.compile(r'^\s*bind(?:(\w+))?\s*=\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
         res = reg.match(line)
 
-        if not (res and len(res.groups()) == 5):
+        if not (res and len(res.groups()) == 6):
             continue
         
-        win_class, mods, key, disp, args = res.groups()
-        keybind = Keybind(win_class, mods, key, disp, args)
+        bind_args, win_class, mods, key, disp, args = res.groups()
+        keybind = Keybind(win_class, mods, key, disp, args, bind_args)
         keybinds.append(keybind)
 
     return keybinds

@@ -25,7 +25,7 @@ for custom hyprland instances/dots:
 add `exec-once = hyprwinbinds` to your hyprland config
   
 configuration:
-```bind = [class], [modifiers], [key], [dispatcher], [params]```
+```bind[flags] = [class], [modifiers], [key], [dispatcher], [params]```
 
 save that into `windowkeys.conf` in your `hypr` directory\
 if you want to use a different file, export `KEYCONF` to the file name (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
@@ -38,6 +38,9 @@ bind = , control, space, exec, rofi -show drun            # opens rofi on CTRL +
 # whitespace doesnt matter, examples below are valid:
 bind=,control,space,exec,rofi -show drun
 bind  =    , control  , space   ,exec ,rofi -show drun
+
+# or with bind flags
+binderl = kitty, meta, e, notify-send "notification" "some notif"
 ```
 
 to stop hyprwinbinds: \
@@ -49,7 +52,6 @@ to reload the config (it doesnt reload automatically like hyprland (soon))\
   <summary>not (yet) supported things</summary>
 
   - live reloading
-  - [bind flags](https://wiki.hypr.land/Configuring/Binds/#bind-flags)
   - other ways of specifying a window (aside from its class)
 </details>
 

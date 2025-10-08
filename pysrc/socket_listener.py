@@ -3,41 +3,88 @@ import sys
 import socket
 from typing import List, NoReturn
 from keybind import Keybind
+import signal
+import conf_parser
 
 EVENT_WINDOW_FOCUSED = "activewindow"
 
-hypr_inst_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", None)
-
-if (hypr_inst_signature is None):
-    print("HIS not found")
-    sys.exit(1)
-    
-xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", None)
-if (xdg_runtime_dir is None):
-    print("XDG_RUNTIME_DIR not set.")
-    sys.exit(2)
-
-socket_path = os.path.join(xdg_runtime_dir, "hypr", hypr_inst_signature, ".socket2.sock")
-
-if not os.path.exists(socket_path):
-    print("Socket doesnt exist (what?)")
-    sys.exit(3)
-
 app_keybinds = []
 logs = False
+current_window_class = ""
+running = True
+
+def handle_keybind_activation() -> None:
+    for keyb in app_keybinds:
+        if keyb.winclass == current_window_class:
+            if not keyb.active:
+                add_keybind(keyb)
+            continue
+        if keyb.active:
+            remove_keybind(keyb)
+
+def reload_keybinds() -> None:
+    global app_keybinds
+    config = conf_parser.read_keybinds_file()
+
+    remove_keybinds()
+    app_keybinds = conf_parser.parse_key_lines(config)
+    handle_keybind_activation()
+     
+    if logs:
+        print("reloaded conf.")
+
+def remove_keybinds() -> None:
+    for keyb in app_keybinds:
+        remove_keybind(keyb)
+
+def at_exit() -> None:
+    global running
+    if logs:
+        print("exitting.")
+    remove_keybinds()
+    running = False
+
+
+def handle_hup_signal(_sig, _frame): reload_keybinds()
+def handle_sigterm_signal(_sig, _frame): at_exit()
+
+def get_socket_path() -> str:
+    hypr_inst_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", None)
+
+    if (hypr_inst_signature is None):
+        print("HIS not found")
+        sys.exit(1)
+        
+    xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", None)
+    if (xdg_runtime_dir is None):
+        print("XDG_RUNTIME_DIR not set.")
+        sys.exit(2)
+
+    socket_path = os.path.join(xdg_runtime_dir, "hypr", hypr_inst_signature, ".socket2.sock")
+
+    if not os.path.exists(socket_path):
+        print("Socket doesnt exist (what?)")
+        sys.exit(3)
+
+    return socket_path
+
 
 def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
     global app_keybinds, logs
     logs = show_logs
     app_keybinds = keybinds
     
+    socket_path = get_socket_path()
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
     try:
+        signal.signal(signal.SIGHUP, handle_hup_signal)
+        signal.signal(signal.SIGTERM, handle_sigterm_signal)
+
         sock.connect(socket_path)
         print("connected to hyprland socket2")
 
-        while True:
+        while running:
             data = sock.recv(4096)
             if not data:
                 print("socket closed")
@@ -64,6 +111,7 @@ def remove_keybind(keybind_event):
     keybind_event.active = False
 
 def on_event(event_text : bytes):
+    global current_window_class
     event : str = event_text.decode().strip()
     events = event.split("\n")
 
@@ -73,14 +121,9 @@ def on_event(event_text : bytes):
         if (event_type != EVENT_WINDOW_FOCUSED):
             continue
 
-        window_class = event_data.split(",")[0]
+        current_window_class = event_data.split(",")[0]
         if logs:
-            print(f"Window focused: {window_class}")
-        for keyb in app_keybinds:
-            if keyb.winclass == window_class:
-                if not keyb.active:
-                    add_keybind(keyb)
-                continue
-            if keyb.active:
-                remove_keybind(keyb)
+            print(f"Window focused: {current_window_class}")
+
+        handle_keybind_activation() 
 

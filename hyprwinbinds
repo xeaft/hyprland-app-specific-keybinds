@@ -30,4 +30,14 @@ fi
 pid=$!
 echo $pid > "$scr_dir/pysrc/.pid"
 wait $pid
+
+for arg in "$@"; do
+  case $arg in
+    -h|--help)
+      echo -e "\nkeywords:\n  stop\t\t   stops the program\n  reload\t   reloads the config"
+      exit 0
+      ;;
+  esac
+done
+
 rm -f "$pid_file"

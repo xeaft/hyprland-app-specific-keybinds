@@ -13,6 +13,7 @@ a script that allows you to have window-specific keybinds on hyprland
 prequisites:
 - a python interpreter in PATH (either `python` or `python3`)
 - `XDG_CONFIG_DIRS` and `XDG_RUNTIME_DIR` are set
+- the `pyinotify` python module is installed (`sudo pacman -S --needed python-pyinotify` on arch)
 - hyprland.. of course
 
 for custom hyprland instances/dots:
@@ -45,13 +46,12 @@ binderl = kitty, meta, e, notify-send "notification" "some notif"
 
 to stop hyprwinbinds: \
 `hyprwinbinds stop`\
-to reload the config (it doesnt reload automatically like hyprland (soon))\
+to reload the config (it reloads automatically (assuming `pyinotify`), but if you need this)\
 `hyprwinbinds reload`
 </details>
 <details>
   <summary>not (yet) supported things</summary>
 
-  - live reloading
   - other ways of specifying a window (aside from its class)
 </details>
 

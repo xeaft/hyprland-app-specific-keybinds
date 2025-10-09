@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import socket
 from typing import List, NoReturn
@@ -12,6 +13,7 @@ app_keybinds = []
 logs = False
 current_window_class = ""
 running = True
+sock = None
 
 def handle_keybind_activation() -> None:
     remove_keybinds()
@@ -37,10 +39,12 @@ def remove_keybinds() -> None:
 
 def at_exit() -> None:
     global running
+    running = False
+    if sock is not None: sock.close()
     if logs:
         print("exitting.")
     remove_keybinds()
-    running = False
+    sys.exit()
 
 
 def handle_hup_signal(_sig, _frame): reload_keybinds()
@@ -68,7 +72,7 @@ def get_socket_path() -> str:
 
 
 def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
-    global app_keybinds, logs
+    global app_keybinds, logs, sock
     logs = show_logs
     app_keybinds = keybinds
     
@@ -97,18 +101,21 @@ def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
 
 def add_keybind(keybind_event) -> None:
     cmd = keybind_event.to_command()
-    os.system(cmd)
+    subprocess.run(cmd, capture_output=True)
     if logs:
-        print(f"added keybind: {cmd}")
+        print(f"added keybind: {cmd[-1]}")
     keybind_event.active = True
 
 def remove_keybind(keybind_event):
-    os.system(keybind_event.to_command(True))
+    cmd = keybind_event.to_command(True)
+    subprocess.run(cmd, capture_output=True)
     if logs:
-        print(f"removed keybind: {keybind_event.to_command(True)}")
+        print(f"removed keybind: {cmd[-1]}")
     keybind_event.active = False
 
 def on_event(event_text : bytes):
+    if not running:
+        return
     global current_window_class
     event : str = event_text.decode().strip()
     events = event.split("\n")

@@ -1,57 +1,66 @@
 # hyprland-app-specific-keybinds
-a script that allows you to have window-specific keybinds on hyprland
-<details>
-  <summary>installation</summary>
-  
+A script that allows you to have window-specific keybinds on hyprland
+
+
+## Installation
   ```sh
   git clone --depth 1 https://github.com/xeaft/hyprland-app-specific-keybinds
   cd hyprland-app-specific-keybinds
   chmod +x install.sh
   ./install.sh
   ```
-\
-prequisites:
+
+
+#### Prequisites:
 - a python interpreter in PATH (either `python` or `python3`)
 - `XDG_CONFIG_DIRS` and `XDG_RUNTIME_DIR` are set
-- hyprland.. of course
+- the `pyinotify` python module is installed (`sudo pacman -S --needed python-pyinotify` on arch)
 
 for custom hyprland instances/dots:
 - export HYPRCONF to the config folder.
   - e.g. if your config path is `~/.config/myHyprland` instead of `~/.config/hypr`, export HYPRCONF to `myHyprland` (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
-</details>
-<details>
-<summary>usage</summary>
+
+## Usage
+- add `exec-once = hyprwinbinds` to your hyprland config
   
-add `exec-once = hyprwinbinds` to your hyprland config
-  
-configuration:
-```bind[flags] = [class], [modifiers], [key], [dispatcher], [params]```
+## Configuration:
+
+> [!NOTE]
+> Selectors are space-separated, put selectors with spaces into brackets (as shown below)
+
+> [!WARNING]
+> All selectors must be exactly matched (Kitty != kitty)
+
+```bind[flags] = [selectors], [modifiers], [key], [dispatcher], [params]```
 
 save that into `windowkeys.conf` in your `hypr` directory\
 if you want to use a different file, export `KEYCONF` to the file name (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
 
-for example:
+#### Examples:
 ```hyprlang
-bind = kitty, meta, h, exec, kitty                        # opens another kitty instance on Meta + H if kitty is focused (why would you want this)
-bind = , control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window without a class is focused (e.g. no focused window or things like some file pickers)
+bind = class:kitty, meta, h, exec, kitty                          # opens another kitty instance on Meta + H if kitty is focused
+bind = , control, space, exec, rofi -show drun                    # opens rofi on CTRL + Space if no window is focused
+bind = class:(), control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window with no class is focused
+bind = fullscreen:1 xwayland:0, meta, g, killactive               # kills a window on Meta + G if its a native window in fullscreen
+bind = title:(App with a multi-word title), , space, killactive   # kills a window on Space if it has that exact title
 
 # whitespace doesnt matter, examples below are valid:
 bind=,control,space,exec,rofi -show drun
 bind  =    , control  , space   ,exec ,rofi -show drun
 
 # or with bind flags
-binderl = kitty, meta, e, notify-send "notification" "some notif"
+binderl = class:kitty, meta, e, notify-send "notification" "some notif"
 ```
 
 to stop hyprwinbinds: \
 `hyprwinbinds stop`\
-to reload the config (it doesnt reload automatically like hyprland (soon))\
+to reload the config (it reloads automatically (assuming `pyinotify`), but if you need this):\
 `hyprwinbinds reload`
-</details>
-<details>
-  <summary>not (yet) supported things</summary>
 
-  - live reloading
-  - other ways of specifying a window (aside from its class)
+<details>
+  <summary>Not (yet) supported things</summary>
+
+  - regex selectors for windows (e.g. `class:(.*tty.*)`)
 </details>
+
 

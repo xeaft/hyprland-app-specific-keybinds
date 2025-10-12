@@ -44,14 +44,16 @@ def parse_key_lines(lines : List[str]) -> List[Keybind]:
         if comment_index != -1:
             line = line[:comment_index]
         
-        reg = re.compile(r'^\s*bind(?:(\w+))?\s*=\s*((?:\w+:\([^)]+\)|\w+:\S+)(?:\s+(?:\w+:\([^)]+\)|\w+:\S+))*)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
+       
+        reg = re.compile(r'^\s*bind(?:(\w+))?\s*=\s*((?:\w+:\([^)]+\)|\w+:\S+)(?:\s+(?:\w+:\([^)]+\)|\w+:\S+))*)?\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
 
         res = reg.match(line)
-
+        
         if not (res and len(res.groups()) == 6):
             continue
         
         bind_args, selectors_raw, mods, key, disp, args = res.groups()
+        if selectors_raw == None: selectors_raw = ""
         selectors = re.findall(r'\w+:\([^)]+\)|\w+:\S+', selectors_raw)
         keybind = Keybind(selectors, mods, key, disp, args, bind_args)
         keybinds.append(keybind)

@@ -156,8 +156,11 @@ def on_event(event_text : bytes):
             continue
 
         current_window = Window.from_address(f"0x{event_data}")
-        if logs and current_window is not None:
-            print(f"Window focused: {current_window.title}")
+        if logs:
+            if current_window is not None:
+               print(f"Window focused: {current_window.title}")
+            else:
+                print("Lost window focus")
 
         handle_keybind_activation() 
 

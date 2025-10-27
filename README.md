@@ -13,7 +13,7 @@ A script that allows you to have window-specific keybinds on hyprland
 
 #### Prequisites:
 - a python interpreter in PATH (either `python` or `python3`)
-- `XDG_CONFIG_DIRS` and `XDG_RUNTIME_DIR` are set
+- `XDG_CONFIG_HOME` and `XDG_RUNTIME_DIR` are set
 - the `pyinotify` python module is installed (`sudo pacman -S --needed python-pyinotify` on arch)
 
 for custom hyprland instances/dots:

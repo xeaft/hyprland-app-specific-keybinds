@@ -36,6 +36,9 @@ for custom hyprland instances/dots:
 save that into `windowkeys.conf` in your `hypr` directory\
 if you want to use a different file, export `KEYCONF` to the file name (see [env vars](https://wiki.hypr.land/Configuring/Environment-variables/))
 
+> [!NOTE]
+> **Not** all windowrule selectors from [the wiki](https://wiki.hypr.land/Configuring/Window-Rules/) are supported. You can only use selectors available in `hyprctl clients`
+
 #### Examples:
 ```hyprlang
 bind = class:kitty, meta, h, exec, kitty                          # opens another kitty instance on Meta + H if kitty is focused
@@ -43,6 +46,7 @@ bind = , control, space, exec, rofi -show drun                    # opens rofi o
 bind = class:(), control, space, exec, rofi -show drun            # opens rofi on CTRL + Space if a window with no class is focused
 bind = fullscreen:1 xwayland:0, meta, g, killactive               # kills a window on Meta + G if its a native window in fullscreen
 bind = title:(App with a multi-word title), , space, killactive   # kills a window on Space if it has that exact title
+bind = class:(.*tty.*), meta, d, killactive                       # kills the window on Meta + G if its class contains "tty" (e.g. kitty, alactritty)
 
 # whitespace doesnt matter, examples below are valid:
 bind=,control,space,exec,rofi -show drun
@@ -56,11 +60,4 @@ to stop hyprwinbinds: \
 `hyprwinbinds stop`\
 to reload the config (it reloads automatically (assuming `pyinotify`), but if you need this):\
 `hyprwinbinds reload`
-
-<details>
-  <summary>Not (yet) supported things</summary>
-
-  - regex selectors for windows (e.g. `class:(.*tty.*)`)
-</details>
-
 

@@ -45,8 +45,7 @@ def parse_key_lines(lines : List[str]) -> List[Keybind]:
             line = line[:comment_index]
         
        
-        reg = re.compile(r'^\s*(\w+)(?:(\w+))?\s*=\s*((?:\w+:\([^)]+\)|\w+:\S+)(?:\s+(?:\w+:\([^)]+\)|\w+:\S+))*)?\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
-
+        reg = re.compile(r'^(bind|unbind|var)([a-z]*)\s*=\s*((?:[^,]+(?:\:[^,]+)?(?:\s+[^,]+:[^,]+)*)?)(?:,\s*([^,]*))?(?:,\s*([^,]*))?(?:,\s*([^,]*))?(?:,\s*(.*))?')
         res = reg.match(line)
         
         if not (res and len(res.groups()) == 7):

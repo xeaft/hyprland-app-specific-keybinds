@@ -7,6 +7,7 @@ from keybind import Keybind
 import signal
 import conf_parser
 from window import Window
+import re
 
 EVENT_WINDOW_FOCUSED = "activewindowv2"
 
@@ -28,17 +29,30 @@ def window_matches_keybind(keyb : Keybind) -> bool:
         return False
     
     succ = 0
+
     for selector in keyb.selectors:
         sel, val = selector.split(":")
+
         if sel == "class": sel = "window_class"
         if val in bool_dict: val = bool_dict[val]
         if type(val) == str and val.startswith("("): val = val[1:-1]
         win_val = getattr(current_window, sel)
         
+        try:
+            if type(val) == bool: raise re.error("re.error: window selector is a boolean")
+            reg = re.compile(val)
+            res = reg.match(win_val)
+            if res is None: raise re.error("re.error: res is none")
+            reg_res = res.group(0)
+            succ += reg_res == win_val
+        except re.error as e:
+            if logs:
+                print(f"re.error: {e}")
+            succ += (win_val == val)
+
         if logs:
             print(f"sel: {sel}: {val} | {win_val} ({win_val == val})")
-        if win_val == val:
-            succ += 1
+
     selector_n = len(keyb.selectors)
     return succ == selector_n if selector_n != 0 else False
 

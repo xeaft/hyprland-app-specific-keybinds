@@ -5,10 +5,10 @@ from keybind import Keybind
 from typing import List, Literal, cast
 
 def get_conf_file_loc() -> str:
-    config_path = os.environ.get("XDG_CONFIG_DIRS", None)
+    config_path = os.environ.get("XDG_CONFIG_HOME", None)
 
     if config_path is None:
-        print("XDG_CONFIG_DIRS is not present.")
+        print("XDG_CONFIG_HOME is not present.")
         sys.exit(1) 
 
     custom_hypr = os.environ.get("HYRPCONF", None)

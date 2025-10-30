@@ -2,7 +2,7 @@ import os
 import re
 import sys
 from keybind import Keybind
-from typing import List
+from typing import List, Literal, cast
 
 def get_conf_file_loc() -> str:
     config_path = os.environ.get("XDG_CONFIG_DIRS", None)
@@ -45,17 +45,23 @@ def parse_key_lines(lines : List[str]) -> List[Keybind]:
             line = line[:comment_index]
         
        
-        reg = re.compile(r'^\s*bind(?:(\w+))?\s*=\s*((?:\w+:\([^)]+\)|\w+:\S+)(?:\s+(?:\w+:\([^)]+\)|\w+:\S+))*)?\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
+        reg = re.compile(r'^\s*(\w+)(?:(\w+))?\s*=\s*((?:\w+:\([^)]+\)|\w+:\S+)(?:\s+(?:\w+:\([^)]+\)|\w+:\S+))*)?\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*?)\s*,\s*(.*)$')
 
         res = reg.match(line)
         
-        if not (res and len(res.groups()) == 6):
+        if not (res and len(res.groups()) == 7):
             continue
         
-        bind_args, selectors_raw, mods, key, disp, args = res.groups()
+        bind_type, bind_args, selectors_raw, mods, key, disp, args = res.groups()
         if selectors_raw == None: selectors_raw = ""
+
+        if bind_type not in ["unbind", "bind"]:
+            print(f"[WARN] Invalid keyword (bind/unbind expected, '{bind_type} recieved')")
+            continue
+
+        bind_type = cast(Literal["unbind", "bind"], bind_type)
         selectors = re.findall(r'\w+:\([^)]+\)|\w+:\S+', selectors_raw)
-        keybind = Keybind(selectors, mods, key, disp, args, bind_args)
+        keybind = Keybind(bind_type, selectors, mods, key, disp, args, bind_args, False if bind_type == "bind" else True)
         keybinds.append(keybind)
 
     return keybinds

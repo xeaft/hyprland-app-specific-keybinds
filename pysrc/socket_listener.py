@@ -49,6 +49,9 @@ def handle_keybind_activation() -> None:
         if window_matches_keybind(keyb):
             if not keyb.active:
                 add_keybind(keyb)
+        else:
+            if keyb.bind_type == "unbind":
+                remove_keybind(keyb)
 
 def reload_keybinds() -> None:
     global app_keybinds
@@ -63,7 +66,12 @@ def reload_keybinds() -> None:
 
 def remove_keybinds() -> None:
     for keyb in app_keybinds:
-        remove_keybind(keyb)
+        remove_keybind(keyb) if keyb.bind_type == "bind" else add_keybind(keyb)
+
+def add_unbind_keybinds() -> None:
+    for i in app_keybinds:
+        if i.bind_type == "unbind":
+            remove_keybind(i)
 
 def at_exit() -> None:
     global running
@@ -73,6 +81,7 @@ def at_exit() -> None:
     if logs:
         print("exitting.")
     remove_keybinds()
+    add_unbind_keybinds()
     sys.exit()
 
 
@@ -85,7 +94,7 @@ def get_socket_path() -> str:
     if (hypr_inst_signature is None):
         print("HIS not found")
         sys.exit(1)
-        
+
     xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", None)
     if (xdg_runtime_dir is None):
         print("XDG_RUNTIME_DIR not set.")
@@ -132,15 +141,15 @@ def add_keybind(keybind_event) -> None:
     cmd = keybind_event.to_command()
     subprocess.run(cmd, capture_output=True)
     if logs:
-        print(f"added keybind: {cmd[-1]}")
-    keybind_event.active = True
+        print(f"{'added' if keybind_event.bind_type == 'bind' else 'removed'} keybind: {cmd[-1]}")
+    keybind_event.active = True # if keybind_event.bind_type == "bind" else False
 
 def remove_keybind(keybind_event):
     cmd = keybind_event.to_command(True)
     subprocess.run(cmd, capture_output=True)
     if logs:
-        print(f"removed keybind: {cmd[-1]}")
-    keybind_event.active = False
+        print(f"{'removed' if keybind_event.bind_type == 'bind' else 'added'} keybind: {cmd[-1]}")
+    keybind_event.active = False # if keybind_event.bind_type == "bind" else True
 
 def on_event(event_text : bytes):
     if not running:
@@ -158,7 +167,7 @@ def on_event(event_text : bytes):
         current_window = Window.from_address(f"0x{event_data}")
         if logs:
             if current_window is not None:
-               print(f"Window focused: {current_window.title}")
+                print(f"Window focused: {current_window.title} (class: {current_window.window_class})")
             else:
                 print("Lost window focus")
 

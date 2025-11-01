@@ -144,8 +144,3 @@ def get_vars_from_file(full_fpath : str) -> List[HyprVar]:
             vars += retval
 
     return vars
-
-if __name__ == "__main__":
-    vars = get_vars_from_file("/home/xeaft/hyprvarstest/testconfig.conf")
-    for var in vars:
-        print(f"VAR: {var.name} = {var.val}")

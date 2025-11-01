@@ -1,3 +1,4 @@
+from logging import log
 import os
 import subprocess
 import sys
@@ -8,11 +9,12 @@ import signal
 import conf_parser
 from window import Window
 import re
+from glog import logger
+from hyprvarparser import get_vars_from_file
 
 EVENT_WINDOW_FOCUSED = "activewindowv2"
 
 app_keybinds = []
-logs = False
 current_window : Window|None = None
 running = True
 sock = None
@@ -46,12 +48,10 @@ def window_matches_keybind(keyb : Keybind) -> bool:
             reg_res = res.group(0)
             succ += reg_res == win_val
         except re.error as e:
-            if logs:
-                print(f"re.error: {e}")
+            logger.debug(f"socket > window matching > re.error: {e}")
             succ += (win_val == val)
 
-        if logs:
-            print(f"sel: {sel}: {val} | {win_val} ({win_val == val})")
+        logger.debug(f"socket > window matching > sel: {sel}: {val} | {win_val} ({win_val == val})")
 
     selector_n = len(keyb.selectors)
     return succ == selector_n if selector_n != 0 else False
@@ -69,14 +69,15 @@ def handle_keybind_activation() -> None:
 
 def reload_keybinds() -> None:
     global app_keybinds
-    config = conf_parser.read_keybinds_file()
+    fileloc = conf_parser.get_conf_file_loc()
+    hyprvars = get_vars_from_file(fileloc)
+    config = conf_parser.read_keybinds_file(conf_parser.get_conf_file_loc())
 
     remove_keybinds()
-    app_keybinds = conf_parser.parse_key_lines(config)
+    app_keybinds = conf_parser.parse_key_lines(config, hyprvars)
     handle_keybind_activation()
      
-    if logs:
-        print("reloaded conf.")
+    logger.debug("reloaded conf.")
 
 def remove_keybinds() -> None:
     for keyb in app_keybinds:
@@ -92,8 +93,7 @@ def at_exit() -> None:
     running = False
     if sock is not None: sock.close()
 
-    if logs:
-        print("exitting.")
+    logger.debug("exitting.")
     remove_keybinds()
     add_unbind_keybinds()
     sys.exit()
@@ -106,26 +106,25 @@ def get_socket_path() -> str:
     hypr_inst_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", None)
 
     if (hypr_inst_signature is None):
-        print("HIS not found")
+        logger.error("HIS not found")
         sys.exit(1)
 
     xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", None)
     if (xdg_runtime_dir is None):
-        print("XDG_RUNTIME_DIR not set.")
+        logger.error("XDG_RUNTIME_DIR not set.")
         sys.exit(2)
 
     socket_path = os.path.join(xdg_runtime_dir, "hypr", hypr_inst_signature, ".socket2.sock")
 
     if not os.path.exists(socket_path):
-        print("Socket doesnt exist (what?)")
+        logger.error("Socket doesnt exist (what?)")
         sys.exit(3)
 
     return socket_path
 
 
-def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
-    global app_keybinds, logs, sock
-    logs = show_logs
+def create_socket(keybinds : List[Keybind]) -> NoReturn:
+    global app_keybinds, sock
     app_keybinds = keybinds
     
     socket_path = get_socket_path()
@@ -136,17 +135,17 @@ def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
         signal.signal(signal.SIGTERM, handle_sigterm_signal)
 
         sock.connect(socket_path)
-        print("connected to hyprland socket2")
+        logger.info("connected to hyprland socket2")
 
         while running:
             data = sock.recv(4096)
             if not data:
-                print("socket closed")
+                logger.error("hyprland socket closed (this shouldnt happen)")
                 break
 
             on_event(data)
     except Exception as e:
-        print("socket error:", e)
+        logger.error("socket error:", e)
     finally:
         sock.close()
         sys.exit()
@@ -154,15 +153,13 @@ def create_socket(keybinds : List[Keybind], show_logs : bool) -> NoReturn:
 def add_keybind(keybind_event) -> None:
     cmd = keybind_event.to_command()
     subprocess.run(cmd, capture_output=True)
-    if logs:
-        print(f"{'added' if keybind_event.bind_type == 'bind' else 'removed'} keybind: {cmd[-1]}")
+    logger.debug(f"{'added' if keybind_event.bind_type == 'bind' else 'removed'} keybind: {cmd[-1]}")
     keybind_event.active = True # if keybind_event.bind_type == "bind" else False
 
 def remove_keybind(keybind_event):
     cmd = keybind_event.to_command(True)
     subprocess.run(cmd, capture_output=True)
-    if logs:
-        print(f"{'removed' if keybind_event.bind_type == 'bind' else 'added'} keybind: {cmd[-1]}")
+    logger.debug(f"{'removed' if keybind_event.bind_type == 'bind' else 'added'} keybind: {cmd[-1]}")
     keybind_event.active = False # if keybind_event.bind_type == "bind" else True
 
 def on_event(event_text : bytes):
@@ -179,11 +176,10 @@ def on_event(event_text : bytes):
             continue
 
         current_window = Window.from_address(f"0x{event_data}")
-        if logs:
-            if current_window is not None:
-                print(f"Window focused: {current_window.title} (class: {current_window.window_class})")
-            else:
-                print("Lost window focus")
+        if current_window is not None:
+            logger.debug(f"Window focused: {current_window.title} (class: {current_window.window_class})")
+        else:
+            logger.debug("Lost window focus")
 
         handle_keybind_activation() 
 

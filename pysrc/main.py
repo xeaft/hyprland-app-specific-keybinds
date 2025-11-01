@@ -1,18 +1,23 @@
+import logging
 import threading
 import socket_listener
 import conf_parser
 import argparse
 import importlib.util
+from glog import logger
+from hyprvarparser import get_vars_from_file
+from hyprvar import HyprVar
+from typing import List
 
 def is_module(mod : str) -> bool:
     return importlib.util.find_spec(mod) is not None
 
 def try_start_inotify_proc() -> None:
     if not is_module("pyinotify"):
-        print("pyinotify not found, cant watch inotify")
+        logger.info("pyinotify not found, cant watch inotify")
         return
     watcher = __import__("inotify_watcher")
-    print("started watcher")
+    logger.info("started watcher")
     watcher.register_watcher()
 
 if __name__ == "__main__":
@@ -22,11 +27,18 @@ if __name__ == "__main__":
     parser.add_help = True
     
     args = parser.parse_args()
+    
+    if args.show_logs:
+        logger.setLevel(logging.DEBUG)
 
-    config = conf_parser.read_keybinds_file()
-    keys = conf_parser.parse_key_lines(config)
+    conf_file = conf_parser.get_conf_file_loc()
+
+    hyprvars : List[HyprVar] = get_vars_from_file(conf_file)
+
+    config = conf_parser.read_keybinds_file(conf_file)
+    keys = conf_parser.parse_key_lines(config, hyprvars)
 
     thread = threading.Thread(target=try_start_inotify_proc, daemon=True)
     thread.start()
-    socket = socket_listener.create_socket(keys, args.show_logs)
+    socket = socket_listener.create_socket(keys)
 

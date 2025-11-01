@@ -47,7 +47,7 @@ to reload the config (it reloads automatically (assuming `pyinotify`), but if yo
 > [!WARNING]
 > All selectors must be exactly matched (Kitty != kitty)
 
-Supported keywords:\
+Supported keywords:
 ```ini
 bind[flags] = [selectors], [modifiers], [key], [dispatcher], [params}
 unbind = [selectors], [modifiers], [key], [dispatcher], [params]

@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import signal
+from glog import logger
 
 scr_path = os.path.dirname(__file__)
 last_upd_time = time.time_ns() / 1000000
@@ -19,7 +20,7 @@ def on_change(_ev):
     last_upd_time = ms_now
     pidfile = os.path.join(scr_path, ".pid")
     if not os.path.isfile(pidfile):
-        print("inotify > .pid not present")
+        logger.error("inotify > .pid not present")
         return
 
     pid = ""
@@ -32,7 +33,7 @@ def register_watcher():
     conf_loc = os.path.dirname(conf_parser.get_conf_file_loc())
 
     if (not len(conf_loc)):
-        print("Failed to get config location for watcher.") 
+        logger.critical("Failed to get config location for watcher.") 
         sys.exit(1)   
 
     wm = pyinotify.WatchManager()

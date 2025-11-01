@@ -106,18 +106,18 @@ def get_socket_path() -> str:
     hypr_inst_signature = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", None)
 
     if (hypr_inst_signature is None):
-        logger.error("HIS not found")
+        logger.critical("HIS not found")
         sys.exit(1)
 
     xdg_runtime_dir = os.environ.get("XDG_RUNTIME_DIR", None)
     if (xdg_runtime_dir is None):
-        logger.error("XDG_RUNTIME_DIR not set.")
+        logger.critical("XDG_RUNTIME_DIR not set.")
         sys.exit(2)
 
     socket_path = os.path.join(xdg_runtime_dir, "hypr", hypr_inst_signature, ".socket2.sock")
 
     if not os.path.exists(socket_path):
-        logger.error("Socket doesnt exist (what?)")
+        logger.critical("Socket doesnt exist (what?)")
         sys.exit(3)
 
     return socket_path
@@ -140,12 +140,12 @@ def create_socket(keybinds : List[Keybind]) -> NoReturn:
         while running:
             data = sock.recv(4096)
             if not data:
-                logger.error("hyprland socket closed (this shouldnt happen)")
+                logger.critical("hyprland socket closed (this shouldnt happen)")
                 break
 
             on_event(data)
     except Exception as e:
-        logger.error("socket error:", e)
+        logger.error("socket error: " + str(e))
     finally:
         sock.close()
         sys.exit()

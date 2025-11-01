@@ -14,7 +14,7 @@ def is_module(mod : str) -> bool:
 
 def try_start_inotify_proc() -> None:
     if not is_module("pyinotify"):
-        logger.info("pyinotify not found, cant watch inotify")
+        logger.warning("pyinotify not found, cant watch inotify")
         return
     watcher = __import__("inotify_watcher")
     logger.info("started watcher")

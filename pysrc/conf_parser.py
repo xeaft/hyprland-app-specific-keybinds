@@ -11,7 +11,7 @@ def get_conf_file_loc() -> str:
     config_path = os.environ.get("XDG_CONFIG_HOME", None)
 
     if config_path is None:
-        logger.error("XDG_CONFIG_HOME is not present.")
+        logger.critical("XDG_CONFIG_HOME is not present.")
         sys.exit(1) 
 
     custom_hypr = os.environ.get("HYRPCONF", None)
@@ -19,14 +19,14 @@ def get_conf_file_loc() -> str:
     hypr_conf_path = os.path.join(config_path, "hypr" if custom_hypr is None else custom_hypr)
 
     if not os.path.exists(hypr_conf_path):
-        logger.error(f"Hyprland config directory doesnt exist. ({hypr_conf_path})")
+        logger.critical(f"Hyprland config directory doesnt exist. ({hypr_conf_path})")
         sys.exit(2)
 
     custom_key_file = os.environ.get("KEYCONF", None)
     key_conf_file = os.path.join(hypr_conf_path, "windowkeys.conf" if custom_key_file is None else custom_key_file)
 
     if not os.path.isfile(key_conf_file):
-        logger.error(f"Keybinds file not found. ({key_conf_file})")
+        logger.critical(f"Keybinds file not found. ({key_conf_file})")
         return ""
 
     return key_conf_file

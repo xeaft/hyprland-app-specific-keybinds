@@ -1,9 +1,10 @@
 from logging import log
+import json
 import os
 import subprocess
 import sys
 import socket
-from typing import List, NoReturn
+from typing import List, NoReturn, Dict
 from keybind import Keybind
 import signal
 import conf_parser
@@ -124,11 +125,22 @@ def get_socket_path() -> str:
 
 
 def create_socket(keybinds : List[Keybind]) -> NoReturn:
-    global app_keybinds, sock
+    global app_keybinds, sock, current_window
     app_keybinds = keybinds
     
     socket_path = get_socket_path()
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    
+    res = subprocess.run(["hyprctl", "-j", "activewindow"], capture_output=True)
+    if res.returncode == 0:
+        win_json : Dict = json.loads(res.stdout)
+        addr : str = win_json.get("address", "")
+        if len(addr):
+            current_window = Window.from_address(addr)
+            if current_window is not None:
+                logger.debug(f"first load win --> {current_window.title}")
+        handle_keybind_activation()
+            
 
     try:
         signal.signal(signal.SIGHUP, handle_hup_signal)

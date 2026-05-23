@@ -1,6 +1,79 @@
 # hyprland-app-specific-keybinds
 A script that allows you to have window-specific keybinds on hyprland
 
+
+## Hyprland >= 0.55
+> [!IMPORTANT]
+> Starting with hyprland 0.55, hyprlang has been deprecated in favor of Lua.\
+> Hyprland exposes `hl.get_active_window()` (besides others), making this script script redundant
+
+<details>
+  <summary>How to use Lua to achieve this</summary>
+  For example, if we want ot bind CTRL + SPACE to launch rofi:
+  
+```lua
+hl.bind("CTRL + SPACE", function()
+	if hl.get_active_window() == nil then
+		hl.exec_cmd("rofi -show drun")
+	end
+end, { non_consuming = true })
+```
+  but thats quite a lot of code, and if used often with more selectors, it could get messy.\
+  so let's write a wrapper function:
+  
+```lua
+function WinBind(win_matches, bind, callback, flags)
+	if flags == nil then
+		flags = {}
+	end
+
+	if flags["non_consuming"] == nil then
+		flags["non_consuming"] = true
+	end
+
+	hl.bind(bind, function()
+		local window = hl.get_active_window()
+
+		if window == nil then
+			if win_matches == nil then
+				callback()
+			end
+			return
+		end
+
+		if win_matches == nil then
+			return
+		end
+
+		for i, v in pairs(win_matches) do
+			if window[i] ~= v then
+				return
+			end
+		end
+
+		callback()
+	end, flags)
+end
+```
+
+now, we can bind like this
+
+```lua
+WinBind({ class = "kitty" }, "CTRL + SPACE", function()
+	hl.exec_cmd("rofi -show drun")
+end)
+
+-- or for no window focused
+WinBind(nil, "CTRL + SPACE", function()
+	hl.exec_cmd("rofi -show drun")
+end)
+```
+
+</details>
+
+---
+## Hyprland < 0.55
+
 ## Table of Contents
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)

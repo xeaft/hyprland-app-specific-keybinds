@@ -5,7 +5,7 @@ A script that allows you to have window-specific keybinds on hyprland
 ## Hyprland >= 0.55
 > [!IMPORTANT]
 > Starting with hyprland 0.55, hyprlang has been deprecated in favor of Lua.\
-> Hyprland exposes `hl.get_active_window()` (besides others), making this script script redundant
+> Hyprland exposes `hl.get_active_window()` (besides others), making this script redundant
 
 <details>
   <summary>How to use Lua to achieve this</summary>
